@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -19,20 +19,24 @@ export class PlayersService {
     return this.db.player.findMany();
   }
 
-  findOne(id: number) {
-    return this.db.player.findFirst({where:{id}});
+  async findOne(id: number) {
+    try{
+      return await this.db.player.findFirst({where:{id}});
+    }
+    catch{return undefined;}
   }
 
   async update(id: number, updatePlayerDto: UpdatePlayerDto) {
     try{
-    return await this.db.player.update({where: {id}, data: updatePlayerDto});
+      if(await this.db.player.findFirst({where:{id}}) == null) return undefined;
+      return await this.db.player.update({where: {id}, data: updatePlayerDto});
     }
     catch {return undefined;}
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     try{
-      return this.db.player.delete({where: {id}});
+      return await this.db.player.delete({where: {id}});
     }
     catch {return undefined;}
   }
